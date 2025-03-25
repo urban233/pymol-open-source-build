@@ -1,0 +1,79 @@
+#A* -------------------------------------------------------------------
+#B* This file contains source code for running a GitHub automation
+#-* related to the build process of the PyMOL computer program
+#C* Copyright 2025 by Martin Urban.
+#D* -------------------------------------------------------------------
+#E* It is unlawful to modify or remove this copyright notice.
+#F* -------------------------------------------------------------------
+#G* Please see the accompanying LICENSE file for further information.
+#H* -------------------------------------------------------------------
+#I* Additional authors of this source file include:
+#-*
+#-*
+#-*
+#Z* -------------------------------------------------------------------
+name: Build wheel files for the Windows operating system
+
+on: [push]
+
+env:
+  VCPKG_ROOT: ${{ github.workspace }}/vendor/vcpkg
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Initialize vcpkg
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git vendor/vcpkg
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Create virtual environment
+        run: |
+          python -m venv .venv
+          call .venv\Scripts\activate.bat
+          python -m pip install wheel setuptools  # setuptools needed for Python >=3.12
+          python -m pip install -r requirements.txt
+        shell: cmd
+
+      - name: Bootstrap vcpkg
+        run: ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.bat -disableMetrics
+
+      - name: Install vcpkg dependencies
+        run: |
+          ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
+
+      - name: Build extension
+        run: |
+          call .venv\Scripts\activate.bat
+          python automations/my_automator.py setup dev-env
+          python -m build
+          pip install dist/*.whl
+        shell: cmd
+
+      - name: Run pytest
+        run: |
+          call .venv\Scripts\activate.bat
+          pip install pytest
+          cd tests/
+          pytest
+        shell: cmd
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PyMOL-wheel-${{ matrix.os }}-${{ matrix.python-version }}
+          path: dist/*.whl
