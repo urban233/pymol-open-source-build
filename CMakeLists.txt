@@ -43,7 +43,6 @@ project(_cmd)
 # ----- OS specific section
 if (${PLATFORM} STREQUAL "WINDOWS")
     message("Running Windows build")
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
     add_library(opengl32 STATIC IMPORTED)
     set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64/OpenGL32.Lib)
 
@@ -67,7 +66,6 @@ if (${PLATFORM} STREQUAL "WINDOWS")
             PYMOL_OPENMP
             # _HAVE_LIBXML # I had linker problems using this macro
     )
-    set(Venv_Python_EXE ${CMAKE_SOURCE_DIR}/.venv/Scripts/python)
 endif ()
 
 if (${PLATFORM} STREQUAL "DARWIN")
@@ -78,7 +76,6 @@ if (${PLATFORM} STREQUAL "DARWIN")
         set(LIB_DIR ${CMAKE_SOURCE_DIR}/vcpkg_installed/x64-osx/lib)
     endif ()
     # --- end
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
     find_package(OpenGL REQUIRED)
 
     set(ALL_COMPILER_ARGS
@@ -105,14 +102,12 @@ if (${PLATFORM} STREQUAL "DARWIN")
             _PYMOL_OSX
             # PYMOL_OPENMP  # Not used in Schrödinger's build
     )
-    set(Venv_Python_EXE ${CMAKE_SOURCE_DIR}/.venv/bin/python)
+    
 endif ()
 
 if (${PLATFORM} STREQUAL "GNU_LINUX")
     # Add Linux specific options here
     message("Running GNU Linux build")
-    #find_package(Python3 ${PYTHON_VER} EXACT COMPONENTS Development REQUIRED)
-    find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
     set(LIB_DIR ${CMAKE_SOURCE_DIR}/vcpkg_installed/x64-linux/lib)
 
     add_library(opengl32 STATIC IMPORTED)
@@ -133,7 +128,6 @@ if (${PLATFORM} STREQUAL "GNU_LINUX")
     set (OS_SPECIFIC_COMPILER_DEFS
             _HAVE_LIBXML
     )
-    set(Venv_Python_EXE ${CMAKE_SOURCE_DIR}/.venv/bin/python)
 endif ()
 # --- end
 
@@ -377,7 +371,7 @@ set(ALL_SRC
 )
 python_add_library(_cmd MODULE WITH_SOABI ${ALL_SRC}) # Default target
 install(TARGETS _cmd DESTINATION pymol)
-
+# add_library(_cmd MODULE ${ALL_SRC}) # Default CLion target
 # ----- Target compile section
 target_compile_options(_cmd PRIVATE ${ALL_COMPILER_ARGS})
 target_compile_features(_cmd PRIVATE cxx_std_17)
@@ -414,16 +408,22 @@ set (ALL_INCLUDE_DIR
 target_include_directories(_cmd PUBLIC ${ALL_INCLUDE_DIR})
 # --- end
 
+# ----- Packages section
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+# The variable for the Python target is needed, otherwise CLion
+# does not recognize the build target as valid target and therefore CMake fails.
+set(PY_LIB Python::Python)
 find_package(freetype CONFIG REQUIRED)
 find_package(glew CONFIG REQUIRED)
 find_package(PNG CONFIG REQUIRED)
 find_package(libxml2 CONFIG REQUIRED)
 find_package(netCDF CONFIG REQUIRED)
+# --- end
 
 # ----- Linker section
 target_link_directories(_cmd PRIVATE ${LIB_DIR}) # Refactor LIB_DIR to something more meaningful
 target_link_options(_cmd PRIVATE ${OS_SPECIFIC_LINKER_OPTIONS})
-target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES} Python)
+target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES} ${PY_LIB})
 # --- end
 
 # ----- Champ section
@@ -444,9 +444,9 @@ python_add_library(_champ MODULE WITH_SOABI ${ALL_CHAMP_SRC})
 # ----- Include section
 set(ALL_CHAMP_INCLUDE_DIR
         contrib/champ
+        pre-built/include
         ${OS_SPECIFIC_INCLUDES}
         ${Python3_INCLUDE_DIRS}
-        pre-built/include
 )
 target_include_directories(_champ PUBLIC ${ALL_INCLUDE_DIR})
 # --- end
