@@ -1,8 +1,29 @@
 cmake_minimum_required(VERSION 3.15...3.26)
-# Determine the platform
+set(CMAKE_VERBOSE_MAKEFILE on)
+# The first step is to detect on which operating system the build runs.
+# This is important because based on that information different compiler and
+# linker flags have to be used.
+#
+# The following CMake argument has to be given if CMake gets invoked
+# in the command line:
+# -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake
+#
+# If CLion is used for the build process, be sure to add the argument to
+# the "CMake profile" under "CMake options".
 if(WIN32)
     set(PLATFORM WINDOWS)
+    # The vcpkg target triplet has to be set BEFORE the project() function
+    # of CMake!
+    set(VCPKG_TARGET_TRIPLET x64-windows-static)
 elseif(APPLE)
+    # On macOS it is necessary to set an environment variable called ARCH with the
+    # arch (either x86_64 or arm64) of your Mac
+    # Example:
+    #   export ARCH=x86_64
+    #   export ARCH=arm64
+    #
+    # If CLion is used, add the environment variable ARCH in the
+    # "Environment" text box under the "CMake profile".
     set(PLATFORM DARWIN)
     if(DEFINED ENV{ARCH})
         set(CMAKE_OSX_ARCHITECTURES $ENV{ARCH}) # Either x86_64 or arm64
@@ -10,42 +31,19 @@ elseif(APPLE)
         message(FATAL_ERROR "ARCH environment variable is not defined")
     endif()
 elseif(UNIX)
+    # Be aware that the CMake UNIX variable always refers to GNU Linux in
+    # this CMake file! This could lead to problems if something like OpenBSD
+    # or FreeBSD is used.
     set(PLATFORM GNU_LINUX)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-if (${PLATFORM} STREQUAL "WINDOWS")
-    set(VCPKG_TARGET_TRIPLET x64-windows-static)
-endif ()
-
 project(_cmd)
-
-set(CMAKE_VERBOSE_MAKEFILE on)
-
-# Add these as CMake arguments (squared brackets denote the options to use)
-# -DPLATFORM=[WINDOWS, DARWIN, GNU_LINUX]
-# -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake
-# -DPYTHON_VER=[..., 3.11, 3.12, ...]
-# -DSHARED_SUFFIX=[.cp311-win_amd64.pyd, .cpython-311-darwin.so, .cpython-311-x86_64-linux-gnu.so]
-# macOS only:
-# -DCMAKE_OSX_ARCHITECTURES=[x86_64, arm64]
-#
-# Windows example:
-# -DPLATFORM=WINDOWS -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake -DPYTHON_VER=3.11 -DSHARED_SUFFIX=.cp311-win_amd64.pyd
-# macOS example:
-# -DPLATFORM=DARWIN -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake -DPYTHON_VER=3.11 -DSHARED_SUFFIX=.cpython-311-darwin.so
-# Linux example:
-# -DPLATFORM=GNU_LINUX -DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake -DPYTHON_EXECUTABLE=./.venv/bin/python -DPYTHON_VER=3.11 -DSHARED_SUFFIX=.cpython-311-x86_64-linux-gnu.so
-
 # ----- OS specific section
 if (${PLATFORM} STREQUAL "WINDOWS")
     message("Running Windows build")
-    #find_package(Python3 ${PYTHON_VER} EXACT COMPONENTS Development REQUIRED)
     find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-    #find_library(Ws2_32 NAMES Ws2_32 REQUIRED)
-    #find_package(Python3 REQUIRED COMPONENTS Development)
-    set(PY_LIB Python::Python)
     add_library(opengl32 STATIC IMPORTED)
     set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64/OpenGL32.Lib)
 
@@ -62,7 +60,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
             vcpkg_installed/x64-windows-static/include
     )
     set (OS_SPECIFIC_LIBRARY_NAMES
-            Advapi32 Ws2_32 glew32 freetype libpng16 libxml2 opengl32 netCDF::netcdf ${PY_LIB}
+            Advapi32 Ws2_32 glew32 freetype libpng16 libxml2 opengl32 netCDF::netcdf
     )
     set (OS_SPECIFIC_COMPILER_DEFS
             WIN32
@@ -81,8 +79,6 @@ if (${PLATFORM} STREQUAL "DARWIN")
     endif ()
     # --- end
     find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-    set(PY_LIB Python::Python)
-
     find_package(OpenGL REQUIRED)
 
     set(ALL_COMPILER_ARGS
@@ -101,7 +97,7 @@ if (${PLATFORM} STREQUAL "DARWIN")
     )
     set (OS_SPECIFIC_LINKER_OPTIONS -framework OpenGL)
     set (OS_SPECIFIC_LIBRARY_NAMES
-            PNG::PNG freetype xml2 GLEW netCDF::netcdf OpenGL::GL #${PY_LIB}
+            PNG::PNG freetype xml2 GLEW netCDF::netcdf OpenGL::GL
     )
     set (OS_SPECIFIC_COMPILER_DEFS
             _HAVE_LIBXML
@@ -117,7 +113,6 @@ if (${PLATFORM} STREQUAL "GNU_LINUX")
     message("Running GNU Linux build")
     #find_package(Python3 ${PYTHON_VER} EXACT COMPONENTS Development REQUIRED)
     find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-    set(PY_LIB Python::Python)
     set(LIB_DIR ${CMAKE_SOURCE_DIR}/vcpkg_installed/x64-linux/lib)
 
     add_library(opengl32 STATIC IMPORTED)
@@ -133,7 +128,7 @@ if (${PLATFORM} STREQUAL "GNU_LINUX")
     )
     set (OS_SPECIFIC_LINKER_OPTIONS -fopenmp)
     set (OS_SPECIFIC_LIBRARY_NAMES
-            freetype opengl32 GLEW PNG::PNG xml2 netCDF::netcdf ${PY_LIB}
+            freetype opengl32 GLEW PNG::PNG xml2 netCDF::netcdf
     )
     set (OS_SPECIFIC_COMPILER_DEFS
             _HAVE_LIBXML
@@ -380,9 +375,8 @@ set(ALL_SRC
         ov/src/OVRandom.cpp
         ov/src/ov_utility.cpp
 )
-python_add_library(_cmd MODULE WITH_SOABI ${ALL_SRC})
+python_add_library(_cmd MODULE WITH_SOABI ${ALL_SRC}) # Default target
 install(TARGETS _cmd DESTINATION pymol)
-#add_library(_cmd SHARED ${ALL_SRC})
 
 # ----- Target compile section
 target_compile_options(_cmd PRIVATE ${ALL_COMPILER_ARGS})
@@ -401,13 +395,6 @@ target_compile_definitions(_cmd PUBLIC ${ALL_COMPILER_DEFS})
 # --- end
 
 # ----- Include section
-# Dynamically gets the numpy include directory
-execute_process(
-        COMMAND ${Venv_Python_EXE} -c "import numpy; print(numpy.get_include())"
-        OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 set (ALL_INCLUDE_DIR
         include
         contrib/uiuc/plugins/include
@@ -420,10 +407,9 @@ set (ALL_INCLUDE_DIR
         layer4
         layer5
         build/generated
+        pre-built/include
         ${OS_SPECIFIC_INCLUDES}
         ${Python3_INCLUDE_DIRS}
-        #${NUMPY_INCLUDE_DIR}
-        pre-built/include
 )
 target_include_directories(_cmd PUBLIC ${ALL_INCLUDE_DIR})
 # --- end
@@ -437,7 +423,7 @@ find_package(netCDF CONFIG REQUIRED)
 # ----- Linker section
 target_link_directories(_cmd PRIVATE ${LIB_DIR}) # Refactor LIB_DIR to something more meaningful
 target_link_options(_cmd PRIVATE ${OS_SPECIFIC_LINKER_OPTIONS})
-target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES})
+target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES} Python)
 # --- end
 
 # ----- Champ section
@@ -460,7 +446,6 @@ set(ALL_CHAMP_INCLUDE_DIR
         contrib/champ
         ${OS_SPECIFIC_INCLUDES}
         ${Python3_INCLUDE_DIRS}
-        #${NUMPY_INCLUDE_DIR}
         pre-built/include
 )
 target_include_directories(_champ PUBLIC ${ALL_INCLUDE_DIR})

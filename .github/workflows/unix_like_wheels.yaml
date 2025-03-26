@@ -32,6 +32,21 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update;
+          sudo apt-get --no-install-recommends install
+          catch2
+          cmake
+          libfreetype6-dev
+          libglew-dev
+          libglm-dev
+          libmsgpack-dev
+          libnetcdf-dev
+          libpng-dev
+          libxml2-dev
+
       - name: Initialize vcpkg
         run: |
           git clone https://github.com/Microsoft/vcpkg.git vendor/vcpkg
@@ -46,6 +61,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           python -m pip install wheel setuptools  # setuptools needed for Python >=3.12
+          python -m pip install cibuildwheel
           python -m pip install -r requirements.txt
 
       - name: Bootstrap vcpkg
@@ -60,8 +76,7 @@ jobs:
           source .venv/bin/activate
           python automations/my_automator.py setup dev-env
           export ARCH=$(uname -m)
-          python -m build
-          pip install dist/*.whl
+          cibuildwheel
 
       - name: Run pytest
         run: |
