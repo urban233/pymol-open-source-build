@@ -1,8 +1,6 @@
 [build-system]
 requires = [
   "scikit-build-core",
-  "cmake>=3.15",
-  "ninja",
   "setuptools>=69.2.0",
   "numpy>=2.0"
 ]

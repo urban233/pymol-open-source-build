@@ -45,7 +45,7 @@ jobs:
         run: |
           python -m venv .venv
           call .venv\Scripts\activate.bat
-          python -m pip install wheel setuptools  # setuptools needed for Python >=3.12
+          python -m pip install --upgrade setuptools pip wheel build pytest
           python -m pip install cibuildwheel
           python -m pip install -r requirements.txt
         shell: cmd
