@@ -36,7 +36,7 @@ jobs:
       - name: Setup Ubuntu
         if: runner.os == 'Linux'
         run: |
-          sudo apt update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev autoconf pearl -y
+          sudo apt update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev autoconf perl -y
 
       - name: Initialize vcpkg
         run: |
