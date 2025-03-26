@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14]
+        os: [ubuntu-22.04, macos-13, macos-14]
         python-version: ["3.11"]
     runs-on: ${{ matrix.os }}
     steps:
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Ubuntu
         if: runner.os == 'Linux'
         run: |
-          sudo apt update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev autoconf perl libipc-run-perl -y
+          sudo apt-get update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev autoconf perl -y
 
       - name: Setup IPC::cmd perl for Ubuntu
         if: runner.os == 'Linux'
@@ -80,4 +80,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PyMOL-wheel-${{ matrix.os }}-${{ matrix.python-version }}
-          path: dist/*.whl
+          path: ./wheelhouse/*.whl
