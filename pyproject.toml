@@ -64,8 +64,6 @@ pmg_tk = "modules/pmg_tk"
 pymol = "modules/pymol"
 pymol2 = "modules/pymol2"
 "pymol/data" = "data"
-#[tool.scikit-build.package-data]
-#pmg_qt = ["forms/*.ui"]
 
 [tool.cibuildwheel]
 build = ["cp310-*", "cp311-*", "cp312-*"]

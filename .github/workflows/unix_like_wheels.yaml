@@ -40,10 +40,9 @@ jobs:
 
       - name: Setup IPC::cmd perl for Ubuntu
         if: runner.os == 'Linux'
-        uses: perl-actions/install-with-cpanm@v1
-        with:
-          install: |
-            IPC::Cmd
+        run: |
+          sudo apt install cpanminus
+          cpanm IPC::Cmd
 
       - name: Initialize vcpkg
         run: |

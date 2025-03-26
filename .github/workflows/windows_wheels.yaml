@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -46,6 +46,7 @@ jobs:
           python -m venv .venv
           call .venv\Scripts\activate.bat
           python -m pip install wheel setuptools  # setuptools needed for Python >=3.12
+          python -m pip install cibuildwheel
           python -m pip install -r requirements.txt
         shell: cmd
 
@@ -60,20 +61,11 @@ jobs:
         run: |
           call .venv\Scripts\activate.bat
           python automations/my_automator.py setup dev-env
-          python -m build
-          pip install dist/*.whl
-        shell: cmd
-
-      - name: Run pytest
-        run: |
-          call .venv\Scripts\activate.bat
-          pip install pytest
-          cd tests/
-          pytest
+          cibuildwheel .
         shell: cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PyMOL-wheel-${{ matrix.os }}-${{ matrix.python-version }}
-          path: dist/*.whl
+          path: ./wheelhouse/*.whl
