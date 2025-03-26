@@ -36,13 +36,13 @@ jobs:
       - name: Setup Ubuntu
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev autoconf perl perl-openssl-defaults -y
+          sudo apt-get update -y && sudo apt-get install git build-essential libxmu-dev libxi-dev libgl-dev libglew-dev libpng-dev libfreetype6-dev libxml2-dev libmsgpack-dev libglm-dev libnetcdf-dev linux-libc-dev autoconf perl -y
 
       - name: Setup IPC::cmd perl for Ubuntu
         if: runner.os == 'Linux'
         run: |
-          sudo apt install cpanminus
-          cpanm IPC::Cmd
+          sudo apt-get install cpanminus
+          sudo cpanm IPC::Cmd
 
       - name: Initialize vcpkg
         run: |
