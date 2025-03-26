@@ -130,6 +130,7 @@ if (${PLATFORM} STREQUAL "GNU_LINUX")
     )
 endif ()
 # --- end
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
 set(ALL_SRC
         build/generated/ShaderText.cpp
@@ -371,7 +372,6 @@ set(ALL_SRC
 )
 python_add_library(_cmd MODULE WITH_SOABI ${ALL_SRC}) # Default target
 install(TARGETS _cmd DESTINATION pymol)
-# add_library(_cmd MODULE ${ALL_SRC}) # Default CLion target
 # ----- Target compile section
 target_compile_options(_cmd PRIVATE ${ALL_COMPILER_ARGS})
 target_compile_features(_cmd PRIVATE cxx_std_17)
@@ -409,10 +409,9 @@ target_include_directories(_cmd PUBLIC ${ALL_INCLUDE_DIR})
 # --- end
 
 # ----- Packages section
-find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 # The variable for the Python target is needed, otherwise CLion
 # does not recognize the build target as valid target and therefore CMake fails.
-set(PY_LIB Python::Python)
+set(PY_LIB )
 find_package(freetype CONFIG REQUIRED)
 find_package(glew CONFIG REQUIRED)
 find_package(PNG CONFIG REQUIRED)
@@ -423,7 +422,7 @@ find_package(netCDF CONFIG REQUIRED)
 # ----- Linker section
 target_link_directories(_cmd PRIVATE ${LIB_DIR}) # Refactor LIB_DIR to something more meaningful
 target_link_options(_cmd PRIVATE ${OS_SPECIFIC_LINKER_OPTIONS})
-target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES} ${PY_LIB})
+target_link_libraries(_cmd PRIVATE ${OS_SPECIFIC_LIBRARY_NAMES})
 # --- end
 
 # ----- Champ section
