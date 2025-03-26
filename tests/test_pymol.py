@@ -34,5 +34,6 @@ _FILEPATH = pathlib.Path(__file__).parent
 def test_fetch() -> None:
   """Tests if the fetch command works correctly."""
   cmd.fetch("3bmp")
+  cmd.save(str(pathlib.Path(_FILEPATH / "3bmp.cif")), "3bmp")
   assert pathlib.Path(_FILEPATH / "3bmp.cif").exists() is True
   assert cmd.get_model("3bmp").atom[0].model == "3bmp"
