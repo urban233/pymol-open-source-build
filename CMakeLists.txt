@@ -14,7 +14,18 @@ if(WIN32)
     set(PLATFORM WINDOWS)
     # The vcpkg target triplet has to be set BEFORE the project() function
     # of CMake!
-    set(VCPKG_TARGET_TRIPLET x64-windows-static)
+    if(DEFINED ENV{WIN_ARCH})
+        # The cibuildwheel tool builds wheel files for both 32- and 64-Bit
+        # Windows, therefore the vcpkg target triplet needs to be switched
+        # accordingly.
+        if($ENV{WIN_ARCH} STREQUAL "x86")
+            set(VCPKG_TARGET_TRIPLET x86-windows-static)
+        elseif($ENV{WIN_ARCH} STREQUAL "x64")
+            set(VCPKG_TARGET_TRIPLET x64-windows-static)
+        endif()
+    else()
+        message(FATAL_ERROR "WIN_ARCH environment variable is not defined")
+    endif()
 elseif(APPLE)
     # On macOS it is necessary to set an environment variable called ARCH with the
     # arch (either x86_64 or arm64) of your Mac
@@ -47,7 +58,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
     set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64/OpenGL32.Lib)
 
     set(LIB_DIR
-            ${CMAKE_SOURCE_DIR}/vcpkg_installed/x64-windows-static/lib
+            ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}-windows-static/lib
             ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64
     )
     set(ALL_COMPILER_ARGS
@@ -56,7 +67,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
             /std:c++17
     )
     set (OS_SPECIFIC_INCLUDES
-            vcpkg_installed/x64-windows-static/include
+            vcpkg_installed/${VCPKG_TARGET_TRIPLET}-windows-static/include
     )
     set (OS_SPECIFIC_LIBRARY_NAMES
             Advapi32 Ws2_32 glew32 freetype libpng16 libxml2 opengl32 netCDF::netcdf
