@@ -58,7 +58,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
     set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64/OpenGL32.Lib)
 
     set(LIB_DIR
-            ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}-windows-static/lib
+            ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib
             ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64
     )
     set(ALL_COMPILER_ARGS
@@ -67,7 +67,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
             /std:c++17
     )
     set (OS_SPECIFIC_INCLUDES
-            vcpkg_installed/${VCPKG_TARGET_TRIPLET}-windows-static/include
+            vcpkg_installed/${VCPKG_TARGET_TRIPLET}/include
     )
     set (OS_SPECIFIC_LIBRARY_NAMES
             Advapi32 Ws2_32 glew32 freetype libpng16 libxml2 opengl32 netCDF::netcdf

@@ -77,3 +77,5 @@ VCPKG_ROOT = "{project}/vendor/vcpkg"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y perl perl-IPC-Cmd zip"
+#manylinux-x86_64-image = "manylinux2014"
+manylinux-x86_64-image = "manylinux_2_28"
