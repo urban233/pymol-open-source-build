@@ -55,8 +55,9 @@ jobs:
 
       - name: Last build environment setup steps
         run: |
-          source .venv/bin/activate
-          python automations/my_automator.py setup dev-env
+          call .venv\Scripts\activate.bat
+          python automations\my_automator.py setup dev-env
+        shell: cmd
 
       - name: Build x86 C extension
         if: ${{ matrix.win_arch == 'x86' }}
