@@ -74,3 +74,6 @@ test-command = "pytest {project}/tests/"
 
 [tool.cibuildwheel.environment]
 VCPKG_ROOT = "{project}/vendor/vcpkg"
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y perl perl-IPC-Cmd"

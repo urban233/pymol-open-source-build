@@ -22,8 +22,6 @@ env:
 jobs:
   # ----- Windows build section
   build-windows:
-    strategy:
-      fail-fast: false
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -52,14 +50,15 @@ jobs:
         run: ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.bat -disableMetrics
 
       - name: Install vcpkg dependencies
+        # Maybe use a matrix for the 32 and 64 bit build
         run: |
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
+          ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x86-windows-static
 
-      - name: Last build environment setup setps
+      - name: Last build environment setup steps
         run: |
           call .venv\Scripts\activate.bat
           python automations/my_automator.py setup dev-env
-          cibuildwheel .
         shell: cmd
 
       - name: Build Win32 C extension
@@ -89,7 +88,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ macos-13, macos-14 ]
-        python-version: [ "3.11" ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -142,8 +140,6 @@ jobs:
 
   # ----- GNU Linux build section
   build-gnu-linux:
-    strategy:
-      fail-fast: false
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
@@ -188,7 +184,6 @@ jobs:
         run: |
           source .venv/bin/activate
           python automations/my_automator.py setup dev-env
-          export CIBW_BEFORE_ALL="yum install -y perl perl-IPC-Cmd"
           cibuildwheel .
 
       - name: Upload artifact
