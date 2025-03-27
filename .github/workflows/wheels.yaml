@@ -53,8 +53,13 @@ jobs:
       - name: Bootstrap vcpkg
         run: ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.bat -disableMetrics
 
+      - name: Last build environment setup steps
+        run: |
+          source .venv/bin/activate
+          python automations/my_automator.py setup dev-env
+
       - name: Build x86 C extension
-        if: ${{ matrix.win_arch }} == 'x86'
+        if: ${{ matrix.win_arch == 'x86' }}
         run: |
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x86-windows-static
           call .venv\Scripts\activate.bat
@@ -63,7 +68,7 @@ jobs:
         shell: cmd
 
       - name: Build x64 C extension
-        if: ${{ matrix.win_arch }} == 'x64'
+        if: ${{ matrix.win_arch == 'x64' }}
         run: |
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
           call .venv\Scripts\activate.bat

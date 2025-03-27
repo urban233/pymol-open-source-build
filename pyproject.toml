@@ -68,7 +68,7 @@ pymol2 = "modules/pymol2"
 build = ["cp311-*"] # Only for debug purposes
 # Skip 32-bit builds
 #skip = ["*-win32", "*-manylinux_i686"]
-skip = ["*-manylinux_i686"]
+skip = ["*-manylinux_i686", "*musllinux*"]
 test-requires = ["pytest", "importlib_metadata"]
 test-command = "pytest {project}/tests/"
 
