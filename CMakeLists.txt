@@ -55,7 +55,7 @@ project(_cmd)
 if (${PLATFORM} STREQUAL "WINDOWS")
     message("Running Windows build")
     add_library(opengl32 STATIC IMPORTED)
-    set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64/OpenGL32.Lib)
+    set_target_properties(opengl32 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib/OpenGL32.Lib)
 
     set(LIB_DIR
             ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib
