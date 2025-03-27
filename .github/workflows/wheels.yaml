@@ -22,6 +22,10 @@ env:
 jobs:
   # ----- Windows build section
   build-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        win_arch: ['x86', 'x64']
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -49,27 +53,19 @@ jobs:
       - name: Bootstrap vcpkg
         run: ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.bat -disableMetrics
 
-      - name: Install vcpkg dependencies
-        # Maybe use a matrix for the 32 and 64 bit build
+      - name: Build x86 C extension
+        if: ${{ matrix.win_arch }} == 'x86'
         run: |
-          ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x86-windows-static
-
-      - name: Last build environment setup steps
-        run: |
-          call .venv\Scripts\activate.bat
-          python automations/my_automator.py setup dev-env
-        shell: cmd
-
-      - name: Build Win32 C extension
-        run: |
           call .venv\Scripts\activate.bat
           set WIN_ARCH='x86'
           cibuildwheel . --platform windows --archs x86
         shell: cmd
 
-      - name: Build Win64 C extension
+      - name: Build x64 C extension
+        if: ${{ matrix.win_arch }} == 'x64'
         run: |
+          ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
           call .venv\Scripts\activate.bat
           set WIN_ARCH='x64'
           cibuildwheel . --platform windows --archs AMD64
@@ -78,7 +74,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PyMOL-wheel-Windows-3.11
+          name: PyMOL-wheel-Windows-${{ matrix.win_arch }}-3.11
           path: ./wheelhouse/*.whl
   # --- end
 
