@@ -9,7 +9,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "pymol"
 readme = "README.md"
-version = "3.1.0a0+2"
+version = "3.1.0a0+3"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
 #description = """
@@ -64,8 +64,8 @@ pymol2 = "modules/pymol2"
 "pymol/data" = "data"
 
 [tool.cibuildwheel]
-#build = ["cp310-*", "cp311-*", "cp312-*"]
-build = ["cp311-*"] # Only for debug purposes
+build = ["cp310-*", "cp311-*", "cp312-*"]
+#build = ["cp311-*"] # Only for debug purposes
 # Skip 32-bit builds
 #skip = ["*-win32", "*-manylinux_i686"]
 skip = ["*-manylinux_i686", "*musllinux*"]
