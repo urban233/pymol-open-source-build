@@ -46,7 +46,7 @@ build.verbose = true
 logging.level = "DEBUG"
 cmake.args = [
   "-DCMAKE_TOOLCHAIN_FILE=./vendor/vcpkg/scripts/buildsystems/vcpkg.cmake",
-  "-DVCPKG_INSTALLED_DIR=./cmake-build-release",
+  "-DVCPKG_INSTALLED_DIR=./vcpkg_installed",
   "-DBUILD_PYTHON_EXTENSION=ON"
 ]
 sdist.include = [
@@ -79,11 +79,3 @@ VCPKG_ROOT = "{project}/vendor/vcpkg"
 before-all = "yum install -y perl perl-IPC-Cmd zip"
 #manylinux-x86_64-image = "manylinux2014"
 manylinux-x86_64-image = "manylinux_2_28"
-
-#[tool.cibuildwheel.windows]
-#repair-wheel-command = """\
-#    delvewheel repair \
-#        -v \
-#        --wheel-dir={dest_dir} \
-#        {wheel} \
-#"""
