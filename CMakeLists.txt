@@ -11,6 +11,7 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 # If CLion is used for the build process, be sure to add the argument to
 # the "CMake profile" under "CMake options".
 if(WIN32)
+    message("Running on Windows.")
     set(PLATFORM WINDOWS)
     # The vcpkg target triplet has to be set BEFORE the project() function
     # of CMake!
@@ -20,8 +21,10 @@ if(WIN32)
         # accordingly.
         if($ENV{WIN_ARCH} STREQUAL "x86")
             set(VCPKG_TARGET_TRIPLET x86-windows-static)
+            set(ARCH_SPECIFIC_LIB_DIR ${CMAKE_SOURCE_DIR}/pre-built/windows/libx86)
         elseif($ENV{WIN_ARCH} STREQUAL "x64")
             set(VCPKG_TARGET_TRIPLET x64-windows-static)
+            set(ARCH_SPECIFIC_LIB_DIR ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64)
         endif()
     else()
         message(FATAL_ERROR "WIN_ARCH environment variable is not defined")
@@ -59,7 +62,7 @@ if (${PLATFORM} STREQUAL "WINDOWS")
 
     set(LIB_DIR
             ${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib
-            ${CMAKE_SOURCE_DIR}/pre-built/windows/libx64
+            ${ARCH_SPECIFIC_LIB_DIR}
     )
     set(ALL_COMPILER_ARGS
             /MP
@@ -422,7 +425,6 @@ target_include_directories(_cmd PUBLIC ${ALL_INCLUDE_DIR})
 # ----- Packages section
 # The variable for the Python target is needed, otherwise CLion
 # does not recognize the build target as valid target and therefore CMake fails.
-set(PY_LIB )
 find_package(freetype CONFIG REQUIRED)
 find_package(glew CONFIG REQUIRED)
 find_package(PNG CONFIG REQUIRED)

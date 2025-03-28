@@ -65,7 +65,7 @@ jobs:
         run: |
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x86-windows-static
           call .venv\Scripts\activate.bat
-          set WIN_ARCH='x86'
+          set WIN_ARCH=x86
           cibuildwheel . --platform windows --archs x86
         shell: cmd
 
@@ -74,7 +74,7 @@ jobs:
         run: |
           ${{ env.VCPKG_ROOT }}/vcpkg install --triplet=x64-windows-static
           call .venv\Scripts\activate.bat
-          set WIN_ARCH='x64'
+          set WIN_ARCH=x64
           cibuildwheel . --platform windows --archs AMD64
         shell: cmd
 
