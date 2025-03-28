@@ -15,9 +15,9 @@
 name: Build Wheels
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - scikit_build_core
 
 env:
   VCPKG_ROOT: ${{ github.workspace }}/vendor/vcpkg
